@@ -30,9 +30,20 @@ st.write("Upload an image, and the model will classify it as Light, *Medium, or 
 uploaded_files = st.file_uploader("Choose image(s)...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
 def detect_cosmetics(image):
-    # Placeholder logic: In real use, replace with ML model or image analysis
-    # Example: return ["Lipstick", "Foundation"] if red/pink tones detected
-    return ["Lipstick", "Foundation"]  # Stub result
+    # Simple heuristic: Detect lipstick by checking for high red/pink pixel ratio
+    np_img = np.array(image)
+    # Focus on lower half of the image (where lips are likely to be)
+    h = np_img.shape[0]
+    lower_half = np_img[h//2:]
+    # Count pixels that are 'red/pink' (R > 120, G < 80, B < 100)
+    red_pixels = ((lower_half[:,:,0] > 120) & (lower_half[:,:,1] < 80) & (lower_half[:,:,2] < 100)).sum()
+    total_pixels = lower_half.shape[0] * lower_half.shape[1]
+    red_ratio = red_pixels / total_pixels
+    cosmetics = []
+    if red_ratio > 0.02:  # If more than 2% of lower half pixels are red/pink
+        cosmetics.append("Lipstick")
+    # Foundation detection is not implemented (would require face/skin analysis)
+    return cosmetics
 
 def detect_camera_filter(image):
     # Placeholder logic: In real use, replace with ML model or heuristics
