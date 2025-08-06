@@ -50,7 +50,11 @@ def detect_camera_filter(image):
     # Example: return "Sepia" if brown/yellow tint detected
     return "None (No obvious filter detected)"  # Stub result
 
+import pandas as pd
+
 if uploaded_files:
+    results = []
+    feedbacks = []
     for idx, uploaded_file in enumerate(uploaded_files):
         st.markdown(f"---\n### Image {idx+1}")
         image = Image.open(uploaded_file).convert('RGB')
@@ -83,3 +87,43 @@ if uploaded_files:
         st.markdown("##### 🔍 All Class Probabilities")
         for i, class_name in enumerate(CLASS_NAMES):
             st.write(f"{class_name}: {prediction[0][i]:.4f}")
+
+        # Collect results for CSV
+        results.append({
+            "Image Name": uploaded_file.name,
+            "Predicted Skin Tone": CLASS_NAMES[predicted_class],
+            "Confidence": confidence,
+            "Cosmetics": ", ".join(cosmetics) if cosmetics else "None",
+            "Camera Filter": camera_filter
+        })
+
+        # User feedback
+        feedback = st.radio(
+            f"Was the prediction correct for Image {idx+1}?",
+            ("Yes", "No"),
+            key=f"feedback_{idx}"
+        )
+        feedbacks.append({
+            "Image Name": uploaded_file.name,
+            "User Feedback": feedback
+        })
+
+    # Download CSV button for results
+    st.markdown("---")
+    st.markdown("### 📥 Download Results")
+    df_results = pd.DataFrame(results)
+    st.download_button(
+        label="Download CSV of Results",
+        data=df_results.to_csv(index=False),
+        file_name="skin_tone_results.csv",
+        mime="text/csv"
+    )
+
+    # Download CSV button for feedback
+    df_feedback = pd.DataFrame(feedbacks)
+    st.download_button(
+        label="Download CSV of User Feedback",
+        data=df_feedback.to_csv(index=False),
+        file_name="user_feedback.csv",
+        mime="text/csv"
+    )
