@@ -50,14 +50,14 @@ def detect_camera_filter(image):
     # Example: return "Sepia" if brown/yellow tint detected
     return "None (No obvious filter detected)"  # Stub result
 
-import pandas as pd
 
+import pandas as pd
 import matplotlib.pyplot as plt
 
+results = []
+feedbacks = []
+skin_tone_counts = {name: 0 for name in CLASS_NAMES}
 if uploaded_files:
-    results = []
-    feedbacks = []
-    skin_tone_counts = {name: 0 for name in CLASS_NAMES}
     show_probs = st.checkbox("Show all class probabilities for each image", value=True)
     for idx, uploaded_file in enumerate(uploaded_files):
         st.markdown(f"---\n### Image {idx+1}")
@@ -117,12 +117,13 @@ if uploaded_files:
         })
 
     # Pie chart of predictions
-    st.markdown("---")
-    st.markdown("### 📊 Skin Tone Prediction Distribution")
-    fig, ax = plt.subplots()
-    ax.pie(list(skin_tone_counts.values()), labels=list(skin_tone_counts.keys()), autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')
-    st.pyplot(fig)
+    if sum(skin_tone_counts.values()) > 0:
+        st.markdown("---")
+        st.markdown("### 📊 Skin Tone Prediction Distribution")
+        fig, ax = plt.subplots()
+        ax.pie(list(skin_tone_counts.values()), labels=list(skin_tone_counts.keys()), autopct='%1.1f%%', startangle=90)
+        ax.axis('equal')
+        st.pyplot(fig)
 
     # Download CSV button for results
     st.markdown("---")
