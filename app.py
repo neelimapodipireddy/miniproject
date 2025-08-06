@@ -52,9 +52,13 @@ def detect_camera_filter(image):
 
 import pandas as pd
 
+import matplotlib.pyplot as plt
+
 if uploaded_files:
     results = []
     feedbacks = []
+    skin_tone_counts = {name: 0 for name in CLASS_NAMES}
+    show_probs = st.checkbox("Show all class probabilities for each image", value=True)
     for idx, uploaded_file in enumerate(uploaded_files):
         st.markdown(f"---\n### Image {idx+1}")
         image = Image.open(uploaded_file).convert('RGB')
@@ -70,7 +74,7 @@ if uploaded_files:
 
         st.markdown("#### 🧠 Prediction")
         st.write(f"Predicted Skin Tone: {CLASS_NAMES[predicted_class]}")
-        st.write(f"Confidence: {confidence:.4f}")
+        st.progress(float(confidence), text=f"Confidence: {confidence:.2%}")
 
         cosmetics = detect_cosmetics(image)
         st.markdown("#### 💄 Detected Cosmetics (Experimental)")
@@ -84,9 +88,10 @@ if uploaded_files:
         st.write(camera_filter)
 
         # Optional: Show all class probabilities
-        st.markdown("##### 🔍 All Class Probabilities")
-        for i, class_name in enumerate(CLASS_NAMES):
-            st.write(f"{class_name}: {prediction[0][i]:.4f}")
+        if show_probs:
+            st.markdown("##### 🔍 All Class Probabilities")
+            for i, class_name in enumerate(CLASS_NAMES):
+                st.write(f"{class_name}: {prediction[0][i]:.4f}")
 
         # Collect results for CSV
         results.append({
@@ -96,6 +101,9 @@ if uploaded_files:
             "Cosmetics": ", ".join(cosmetics) if cosmetics else "None",
             "Camera Filter": camera_filter
         })
+
+        # Count for pie chart
+        skin_tone_counts[CLASS_NAMES[predicted_class]] += 1
 
         # User feedback
         feedback = st.radio(
@@ -107,6 +115,14 @@ if uploaded_files:
             "Image Name": uploaded_file.name,
             "User Feedback": feedback
         })
+
+    # Pie chart of predictions
+    st.markdown("---")
+    st.markdown("### 📊 Skin Tone Prediction Distribution")
+    fig, ax = plt.subplots()
+    ax.pie(list(skin_tone_counts.values()), labels=list(skin_tone_counts.keys()), autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')
+    st.pyplot(fig)
 
     # Download CSV button for results
     st.markdown("---")
