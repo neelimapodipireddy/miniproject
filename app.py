@@ -23,7 +23,7 @@ if model is None:
     st.stop()
 
 # --- Streamlit UI ---
-st.title("🧑🏽‍🦱 Skin Tone Classifier")
+st.title("🧑🏽‍🦱 Shade Classifier")
 st.write("Upload an image, and the model will classify it as Light, *Medium, or **Dark* skin tone.")
 
 # --- File Upload (Multi-image) ---
